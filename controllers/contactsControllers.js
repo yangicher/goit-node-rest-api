@@ -60,7 +60,7 @@ export const updateContact = async(req, res) => {
             throw HttpError(404, `Not found`);
         }
 
-        res.json(result);
+        res.status(200).json(result);
     } catch (err) {
         next(err);
     }
