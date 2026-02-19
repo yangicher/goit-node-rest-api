@@ -6,6 +6,7 @@ import connectDatabase from "./db/connectDatabase.js";
 import { ValidationError } from "sequelize"; 
 
 import contactsRouter from "./routes/contactsRouter.js";
+import authRouter from "./routes/authRouter.js";
 import "dotenv/config";
 
 const {DB_HOST, PORT = 3000} = process.env;
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/contacts", contactsRouter);
+app.use("/api/auth", authRouter);
 app.use(errorhandler);
 
 app.use((_, res) => {
