@@ -1,45 +1,46 @@
-export const getUser = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const result = await authService.getUserById(id);
-    if (!result) {
-      throw HttpError(404, "Not found");
+import { createToken, verifyToken } from "../helpers/jwt";
+import bcrypt from "bcrypt";
+import { HttpError } from "../helpers/HttpError.js";
+import User from "../db/models/Users.js";
+
+export const getUser = async filter => User.findOne(filter);
+
+export const registerUser = async (payload) => {
+  const passwordHash = await bcrypt.hash(payload.password, 10);
+  return User.create({ ...payload, password: passwordHash });
+};
+
+export const loginUser = async ({ email, password }) => {
+  const user = await User.findOne({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    throw HttpError(401, "Email or password is wrong");
+  }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw HttpError(401, "Email or password is wrong");
+  }
+
+  const payload = {
+    id: user.id,
+  };
+  const token = createToken(payload);
+  await user.update({ token });
+  return {user, token};
+};
+
+export const logoutUser = user => {
+    user.update({ token: null });
+};
+
+export const updateSubscription = async (userId, subscription) => {
+    const user = await User.findByPk(userId);
+    if (!user) {
+        throw HttpError(404, "User not found");
     }
-
-    res.status(200).json(result);
-  } catch (err) {
-    next(err);
-  }
+    await user.update({ subscription });
+    return user;
 }
-
-export const registerUser = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const result = await authService.registerUser(email, password);
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-}
-
-export const loginUser = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const result = await authService.loginUser(email, password);
-    res.status(200).json(result);
-  } catch (err) {
-    next(err);
-  }
-}
-
-export const logoutUser = async (req, res, next) => {
-  try {
-    const { id } = req.user;
-    await authService.logoutUser(id);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
-}
-
-//export const updateSubscription = async (req, res, next) => {

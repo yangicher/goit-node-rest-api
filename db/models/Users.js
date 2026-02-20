@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../sequelize.js";
 
-const Users = sequelize.define(
+const User = sequelize.define(
   'users', {
     password: {
         type: DataTypes.STRING,
@@ -24,5 +24,5 @@ const Users = sequelize.define(
   }
 );
 
-export default Users;
+export default User;
 

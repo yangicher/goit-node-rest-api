@@ -1,15 +1,14 @@
-import authsRouter from "../routes/authRouter.js";
 import * as authServices from "../services/authServices.js";
 
-import Users from "../db/models/Users.js";
+import User from "../db/models/Users.js";
 import { HttpError } from "../helpers/index.js";
 
 export const register = async (req, res, next) => {
   try {
     const { email } = req.body;
-    const user = await Users.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email } });
     if (user) throw HttpError(409, "Email in use");
-    const newUser = await Users.create(req.body);
+    const newUser = await User.create(req.body);
     res.status(201).json({
       user: {
         email: newUser.email,
@@ -23,8 +22,8 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    authServices.loginUser(req.body.email, req.body.password);
-    // Implement login logic here
+    const token = await authServices.loginUser(req.body.email, req.body.password);
+    res.json({ token });
   } catch (error) {
     next(error);
   }
@@ -36,13 +35,15 @@ export const logout = async (req, res, next) => {
 };
 
 export const getCurrentUser = async (req, res, next) => {
-  try {
-    const user = await authServices.getUser(req.user.id);
-    res.json(user); 
-  } catch (error) {
-    next(error);
-  }
-};
+    const {username, email, subscription} = req.user;
+    res.json({username, email, subscription});
+}
+//   try {
+//     const user = await authServices.getUser(req.user.id);
+//     res.json(user); 
+//   } catch (error) {
+//     next(error);
+//   }
 
 export const updateSubscription = async (req, res, next) => {
   try {
