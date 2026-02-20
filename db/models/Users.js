@@ -8,9 +8,12 @@ const User = sequelize.define(
         allowNull: false,
     },
     email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+        args: true,
+        msg: "Email in use",
+      },
     },
     subscription: {
         type: DataTypes.ENUM,
@@ -23,6 +26,8 @@ const User = sequelize.define(
     },
   }
 );
+
+//User.sync({ alter: true });
 
 export default User;
 
