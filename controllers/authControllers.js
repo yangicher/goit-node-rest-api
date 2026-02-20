@@ -34,8 +34,12 @@ export const login = async (req, res, next) => {
 };
 
 export const logout = async (req, res, next) => {
-  await authServices.logoutUser(req.user.id);
-  res.status(204).send();
+  try {
+    await authServices.logoutUser(req.user);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getCurrentUser = async (req, res, next) => {

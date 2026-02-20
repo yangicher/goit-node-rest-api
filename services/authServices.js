@@ -25,8 +25,8 @@ export const loginUser = async (email, password) => {
   };
 };
 
-export const logoutUser = (user) => {
-  user.update({ token: null });
+export const logoutUser = async (user) => {
+  await user.update({ token: null });
 };
 
 export const updateSubscription = async (userId, subscription) => {
