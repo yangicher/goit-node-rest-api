@@ -1,6 +1,6 @@
-import { createToken, verifyToken } from "../helpers/jwt";
+import { createToken } from "../helpers/jwt.js";
 import bcrypt from "bcrypt";
-import { HttpError } from "../helpers/HttpError.js";
+import HttpError from "../helpers/HttpError.js";
 import User from "../db/models/Users.js";
 
 export const getUser = async filter => User.findOne(filter);

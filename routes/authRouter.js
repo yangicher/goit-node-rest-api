@@ -1,19 +1,25 @@
 import { Router } from "express";
-import { authenticate } from "../middlewares/auth.js";
+import authenticate from "../middlewares/auth.js";
 import validateBody from "../helpers/validateBody.js";
 import { loginSchema, registerSchema, updateSubscriptionSchema } from "../schemas/authSchemas.js";
-import * as authController from "../controllers/authControllers.js";
+import {
+  register,
+  login,
+  logout,
+  getCurrentUser,
+  updateSubscription,
+} from "../controllers/authControllers.js";
 
 const authRouter = Router();
 
-authRouter.post("/register", validateBody(registerSchema), authController.register);
+authRouter.post("/register", validateBody(registerSchema), register);
 
-authRouter.post("/login", validateBody(loginSchema), authController.login);
+authRouter.post("/login", validateBody(loginSchema), login);
 
-authRouter.post("/logout", authenticate, authController.logout);
+authRouter.post("/logout", authenticate, logout);
 
-authRouter.get("/current", authenticate, authController.getCurrentUser);
+authRouter.get("/current", authenticate, getCurrentUser);
 
-authRouter.patch("/subscription", validateBody(updateSubscriptionSchema), authController.updateSubscription);
+authRouter.patch("/subscription", validateBody(updateSubscriptionSchema), updateSubscription);
 
 export default authRouter;

@@ -1,7 +1,7 @@
 import * as authServices from "../services/authServices.js";
 
 import User from "../db/models/Users.js";
-import { HttpError } from "../helpers/index.js";
+import HttpError from "../helpers/HttpError.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -38,12 +38,6 @@ export const getCurrentUser = async (req, res, next) => {
     const {username, email, subscription} = req.user;
     res.json({username, email, subscription});
 }
-//   try {
-//     const user = await authServices.getUser(req.user.id);
-//     res.json(user); 
-//   } catch (error) {
-//     next(error);
-//   }
 
 export const updateSubscription = async (req, res, next) => {
   try {
