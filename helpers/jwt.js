@@ -9,6 +9,6 @@ export const verifyToken = token => {
         const data = jwt.verify(token, JWT_SECRET);
         return {data, error: null};
     } catch (error) {
-        return {data: null, err};
+        return {data: null, error};
     }
 }
