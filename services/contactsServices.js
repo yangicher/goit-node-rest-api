@@ -1,6 +1,16 @@
 import Contact from "../db/models/Contact.js";
 
-export const listContacts = (owner) => Contact.findAll({ where: { owner } });
+export const listContacts = async (owner, page, limit) => {
+  const pageNumber = parseInt(page, 10);
+  const limitNumber = parseInt(limit, 10);
+
+  const offset = (pageNumber - 1) * limitNumber;
+  return Contact.findAll({
+    where: { owner },
+    limit: limitNumber,
+    offset: offset,
+  });
+};
 
 export const getContactById = (contactId) => Contact.findByPk(contactId);
 
