@@ -4,6 +4,7 @@ export const createContactSchema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     phone: Joi.string().pattern(/^[\+]?[0-9]{10,15}$/).required(),
+    owner: Joi.number().integer().required(),
     favorite: Joi.boolean(),
 })
 

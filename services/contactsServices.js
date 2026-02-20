@@ -1,6 +1,6 @@
 import Contact from "../db/models/Contact.js";
 
-export const listContacts = () => Contact.findAll();
+export const listContacts = (owner) => Contact.findAll({ where: { owner } });
 
 export const getContactById = (contactId) => Contact.findByPk(contactId);
 
@@ -12,8 +12,8 @@ export async function removeContact(contactId) {
   return contact;
 }
 
-export async function addContact(name, email, phone) {
-  const newContact = await Contact.create({ name, email, phone });
+export async function addContact(name, email, phone, owner) {
+  const newContact = await Contact.create({ name, email, phone, owner });
   return newContact;
 }
 

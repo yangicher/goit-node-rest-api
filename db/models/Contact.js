@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../sequelize.js";
 
 const Contact = sequelize.define(
-  'contact', {
+  'contacts', {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -22,12 +22,6 @@ const Contact = sequelize.define(
     owner: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: "User",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
     },
   }
 );
