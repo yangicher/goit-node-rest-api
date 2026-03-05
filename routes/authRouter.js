@@ -8,7 +8,9 @@ import {
   logout,
   getCurrentUser,
   updateSubscription,
+  updateAvatar
 } from "../controllers/authControllers.js";
+import upload from "./../middlewares/upload.js";
 
 const authRouter = Router();
 
@@ -21,5 +23,7 @@ authRouter.post("/logout", authenticate, logout);
 authRouter.get("/current", authenticate, getCurrentUser);
 
 authRouter.patch("/subscription", authenticate, validateBody(updateSubscriptionSchema), updateSubscription);
+
+authRouter.patch("/avatars", authenticate, upload.single("avatar"), updateAvatar);
 
 export default authRouter;

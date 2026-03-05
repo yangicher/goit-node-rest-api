@@ -2,9 +2,9 @@ import * as authServices from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
 
 export const register = async (req, res) => {
-  const user = await authServices.getUser({ email: req.body.email });
+  const user = await authServices.getUser({ where: { email: req.body.email } });
   if (user) {
-    res.status(409).json({
+    return res.status(409).json({
       message: "Email in use",
     });
   }
@@ -43,8 +43,8 @@ export const logout = async (req, res, next) => {
 };
 
 export const getCurrentUser = async (req, res, next) => {
-  const { username, email, subscription } = req.user;
-  res.json({ username, email, subscription });
+  const { username, email, subscription, avatarURL } = req.user;
+  res.json({ username, email, subscription, avatarURL });
 };
 
 export const updateSubscription = async (req, res, next) => {
@@ -57,4 +57,10 @@ export const updateSubscription = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const updateAvatar = async (req, res) => {
+  const { id: owner } = req.user;
+  const avatarURL = await authServices.updateAvatar(owner, req.file);
+  return res.status(200).json({ avatarURL });
 };
