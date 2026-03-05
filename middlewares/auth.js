@@ -18,7 +18,7 @@ const authenticate = async (req, res, next) => {
     throw HttpError(401, error.message);
   }
 
-  const user = await getUser({ id: data.id });
+  const user = await getUser({ where: { id: data.id } });
 
   if (!user || !user.token) {
     throw HttpError(401, "Not authorized");
