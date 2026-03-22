@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Admin Panel</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; display: flex; gap: 20px; }
+    .container { flex: 1; max-width: 600px; display: flex; flex-direction: column; gap: 20px; height: 95vh; overflow-y: auto; padding-right: 10px; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card h3 { margin-top: 0; margin-bottom: 15px; color: #333; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .form-group { margin-bottom: 10px; }
+    input, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    button:hover { background: #0056b3; }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #5a6268; }
+    .btn-danger { background: #dc3545; }
+    .btn-danger:hover { background: #c82333; }
+    
+    .response-panel { flex: 1; background: #1e1e1e; color: #d4d4d4; border-radius: 8px; display: flex; flex-direction: column; height: 95vh; position: sticky; top: 20px; }
+    .response-header { padding: 10px 20px; background: #2d2d2d; border-radius: 8px 8px 0 0; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
+    pre { margin: 0; padding: 20px; overflow-y: auto; flex: 1; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 14px; }
+    
+    .token-box { background: #e2f0d9; padding: 10px; border-radius: 4px; font-size: 12px; word-break: break-all; margin-bottom: 15px; border: 1px solid #c5e0b4;}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🛠 API Admin Dashboard</h2>
+    
+    <div class="card token-box" id="tokenDisplay">
+      <strong>Поточний Token:</strong> <span id="tokenValue">Немає (Потрібен логін)</span>
+    </div>
+
+    <div class="card">
+      <h3>1. Реєстрація / Логін</h3>
+      <div class="form-group"><input type="email" id="authEmail" placeholder="Email" value="test@example.com"></div>
+      <div class="form-group"><input type="password" id="authPassword" placeholder="Password" value="password123"></div>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="register()">Реєстрація</button>
+        <button onclick="login()">Логін</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2. Користувач</h3>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-secondary" onclick="getCurrentUser()">Отримати Current User</button>
+        <button class="btn-danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3. Завантаження Аватарки</h3>
+      <div class="form-group">
+        <input type="file" id="avatarFile" accept="image/*">
+      </div>
+      <button onclick="uploadAvatar()">Завантажити Аватар</button>
+    </div>
+
+    <div class="card">
+      <h3>4. Контакти (Contacts)</h3>
+      <button class="btn-secondary" onclick="getContacts()">Отримати всі контакти</button>
+      
+      <h4 style="margin: 15px 0 10px;">Створити контакт:</h4>
+      <div class="form-group"><input type="text" id="contactName" placeholder="Ім'я"></div>
+      <div class="form-group"><input type="email" id="contactEmail" placeholder="Email"></div>
+      <div class="form-group"><input type="text" id="contactPhone" placeholder="Телефон"></div>
+      <button onclick="createContact()">Створити</button>
+    </div>
+  </div>
+
+  <div class="response-panel">
+    <div class="response-header">
+      <span id="statusBadge">Статус: очікування...</span>
+      <button style="width: auto; margin: 0; padding: 4px 8px; font-size: 12px;" onclick="clearLog()">Очистити</button>
+    </div>
+    <pre id="output">{
+  "message": "Зробіть запит, щоб побачити відповідь"
+}</pre>
+  </div>
+
+  <script>
+    let currentToken = localStorage.getItem('apiToken') || null;
+    updateTokenDisplay();
+
+    function updateTokenDisplay() {
+      const display = document.getElementById('tokenValue');
+      if (currentToken) {
+        display.textContent = currentToken.substring(0, 30) + '...';
+        display.style.color = 'green';
+      } else {
+        display.textContent = 'Немає (Потрібен логін)';
+        display.style.color = 'red';
+      }
+    }
+
+    function setToken(token) {
+      currentToken = token;
+      if (token) {
+        localStorage.setItem('apiToken', token);
+      } else {
+        localStorage.removeItem('apiToken');
+      }
+      updateTokenDisplay();
+    }
+
+    async function apiCall(endpoint, method = 'GET', body = null, isFormData = false) {
+      const output = document.getElementById('output');
+      const statusBadge = document.getElementById('statusBadge');
+      output.textContent = "Завантаження...";
+      statusBadge.textContent = `Запит: ${method} ${endpoint}`;
+
+      const headers = {};
+      if (currentToken) {
+        headers['Authorization'] = `Bearer ${currentToken}`;
+      }
+      if (!isFormData && body) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const options = {
+        method,
+        headers,
+      };
+
+      if (body) {
+        options.body = isFormData ? body : JSON.stringify(body);
+      }
+
+      try {
+        const response = await fetch(endpoint, options);
+        
+        const text = await response.text();
+        let data = text;
+        try { data = JSON.parse(text); } catch (e) {}
+
+        statusBadge.textContent = `Статус: ${response.status} ${response.ok ? '✅' : '❌'}`;
+        output.textContent = JSON.stringify(data, null, 2) || "Empty response";
+
+        return { ok: response.ok, status: response.status, data };
+      } catch (error) {
+        statusBadge.textContent = `Помилка мережі ❌`;
+        output.textContent = error.message;
+        return { ok: false, error };
+      }
+    }
+
+    function clearLog() {
+      document.getElementById('output').textContent = "";
+      document.getElementById('statusBadge').textContent = "Очищено";
+    }
+
+    async function register() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      await apiCall('/api/auth/register', 'POST', { email, password });
+    }
+
+    async function login() {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const res = await apiCall('/api/auth/login', 'POST', { email, password });
+      
+      if (res.ok && res.data.result && res.data.result.token) {
+        setToken(res.data.result.token);
+      }
+    }
+
+    async function logout() {
+      const res = await apiCall('/api/auth/logout', 'POST');
+      if (res.ok || res.status === 401) {
+        setToken(null);
+      }
+    }
+
+    async function getCurrentUser() {
+      await apiCall('/api/auth/current', 'GET');
+    }
+
+    async function uploadAvatar() {
+      const fileInput = document.getElementById('avatarFile');
+      if (!fileInput.files.length) {
+        alert("Оберіть файл спочатку!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('avatar', fileInput.files[0]);
+
+      await apiCall('/api/auth/avatars', 'PATCH', formData, true);
+    }
+
+    async function getContacts() {
+      await apiCall('/api/contacts', 'GET');
+    }
+
+    async function createContact() {
+      const name = document.getElementById('contactName').value;
+      const email = document.getElementById('contactEmail').value;
+      const phone = document.getElementById('contactPhone').value;
+      
+      await apiCall('/api/contacts', 'POST', { name, email, phone });
+    }
+  </script>
+</body>
+</html>

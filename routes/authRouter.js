@@ -8,7 +8,9 @@ import {
   logout,
   getCurrentUser,
   updateSubscription,
-  updateAvatar
+  updateAvatar,
+  verifyUser,
+  sentUserEmail
 } from "../controllers/authControllers.js";
 import upload from "./../middlewares/upload.js";
 
@@ -25,5 +27,9 @@ authRouter.get("/current", authenticate, getCurrentUser);
 authRouter.patch("/subscription", authenticate, validateBody(updateSubscriptionSchema), updateSubscription);
 
 authRouter.patch("/avatars", authenticate, upload.single("avatar"), updateAvatar);
+
+authRouter.get("/verify/:verificationToken", verifyUser);
+
+authRouter.post("/verify", sentUserEmail);
 
 export default authRouter;

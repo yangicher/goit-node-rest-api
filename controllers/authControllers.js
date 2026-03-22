@@ -9,12 +9,20 @@ export const register = async (req, res) => {
     });
   }
   try {
+    const { email } = req.body;
+    const user = await authServices.findUser({ email });
+    if (user) throw HttpError(409, "Email in use");
+
     const newUser = await authServices.registerUser(req.body);
+    const verificationEmail = {
+      to: email,
+      subject: "Verify your email",
+      html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${newUser.verificationToken}">Click to verify your email</a>`,
+    };
+    await sendEmail(verificationEmail);
+
     res.status(201).json({
-      user: {
-        email: newUser.email,
-        subscription: newUser.subscription,
-      },
+      user: { email: newUser.email, subscription: newUser.subscription },
     });
   } catch (error) {
     res.status(400).json({
@@ -63,4 +71,16 @@ export const updateAvatar = async (req, res) => {
   const { id: owner } = req.user;
   const avatarURL = await authServices.updateAvatar(owner, req.file);
   return res.status(200).json({ avatarURL });
+};
+
+export const verifyUser = async (req, res) => {
+  const { verificationToken } = req.params;
+  await service.verifyUser(verificationToken);
+  res.json({ message: "Verification successful" });
+};
+
+export const sentUserEmail = async (req, res) => {
+  const { email } = req.body;
+  await service.sentUserEmail(email);
+  res.json({ message: "Verification email sent" });
 };

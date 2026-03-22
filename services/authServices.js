@@ -5,6 +5,7 @@ import User from "../db/models/Users.js";
 import gravatar from "gravatar";
 import fs from "fs/promises";
 import path from "path";
+import sendEmail from "../helpers/sendEmail.js";
 
 export const getUser = async (filter) => User.findOne(filter);
 
@@ -23,6 +24,11 @@ export const loginUser = async (email, password) => {
   if (!passCompare) throw HttpError(401, "Email or password is wrong");
   const token = await createToken({ id: user.id });
   await user.update({ token });
+  sendEmail({
+    to: "sergey.yangicher@gmail.com",
+    subject: "App Login Notification",
+    html: `<p>${user.email} successfully logged in.</p>`,
+  });
   return {
     token,
     user: { email: user.email, subscription: user.subscription, avatarURL: user.avatarURL },
@@ -54,4 +60,32 @@ export const updateAvatar = async (owner, fileinfo) => {
   const user = await getUser({ where: { id: owner } });
   await user.update({ avatarURL });
   return avatarURL;
+};
+
+export const verifyUser = async (verificationToken) => {
+  const user = await User.findOne({ where: { verificationToken } });
+  if (!user) {
+    throw httpError(404, "User not found");
+  }
+  await user.update({ verify: true });
+  return true;
+};
+
+export const sentUserEmail = async (email) => {
+  const user = await User.findOne({ where: { email } });
+  let token = user.verificationToken;
+  if (!user) throw httpError(404, "User Not Found");
+  if (user.verify) throw httpError(400, "Verification has already been passed");
+  if (!token) {
+    token = nanoid();
+    await user.update({ verificationToken: token });
+  }
+  await sendEmail({
+    to: email,
+    subject: "Verify email",
+    html: `<strong>Verify email (resent)</strong><br>
+    <a href="${SERVER_URL}/api/auth/verify/${token}" target="_blank">click to verify</a>`,
+  });
+
+  return true;
 };
